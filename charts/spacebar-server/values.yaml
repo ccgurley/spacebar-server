@@ -1,0 +1,30 @@
+image:
+  repository: ccgurley/spacebar-server:latest
+  tag: latest
+  pullPolicy: Always
+
+#environment:
+#  config:
+#    path:
+#    file:
+
+service:
+  type: ClusterIP
+  ports:
+    targetPort: 3001
+    servicePort: 80
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: your-certmanager
+  path: /
+  hosts:
+    - spacebar.domain.tld
+# tls:
+#   - secretName: crt-peertube.domain.tld
+#     hosts:
+#       - spacebar.domain.tld
+

@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ template "name" . }}
+  {{- if .Values.deploymentAnnotations }}
+  annotations:
+    {{- range $key, $value := .Values.deploymentAnnotations }}
+    {{ $key }}: {{ $value | quote }}
+    {{- end }}
+  {{- end }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "name" . }}
+      release: {{ .Release.Name }}
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+{{- if .Values.persistence.config.claimName }}
+      volumes:
+        - name: spacebar-server-config
+          persistentVolumeClaim:
+            claimName: {{ .Values.persistence.config.claimName }}
+{{- end }}
+      containers:
+        - env:
+            - name: THREADS
+              value: {{ .Values.environment.threads }} 
+            - name: PORT
+              value: {{ .Values.service.ports.targetPort | quote }}
+            - name: DATABASE
+              value: {{ .Values.environment.database }}
+{{- if .Values.environment.config.path }}
+            - name: CONFIG_PATH
+              value: {{ .Values.environment.config.path }}/config.json
+{{- end }}
+            - name: WS_LOGEVENTS
+              value: {{ .Values.environment.ws_logevents }}
+            - name: WS_VERBOSE
+              value: {{ .Values.environment.ws_verbose }}
+            - name: WS_DUMP
+              value: {{ .Values.environment.ws_dump }}
+            - name: CDN
+              value: {{ .Values.environment.cdn }}
+            - name: GATEWAY
+              value: {{ .Values.environment.gateway }}
+            - name: STORAGE_LOCATION
+              value: {{ .Values.environment.storage_location }}
+            - name: STORAGE_PROVIDER
+              value: {{ .Values.environment.storage_provider }}
+            - name: STORAGE_BUCKET
+              value: {{ .Values.environment.storage_bucket }}
+            - name: STORAGE_REGION
+              value: {{ .Values.environment.storage_region }}
+{{- if .Values.persistence.config.claimName }}
+          volumeMounts:
+            - name: spacebar-server-config
+              mountPath: {{ .Values.environment.config.path }}
+{{- if .Values.persistence.config.subPath }}
+              subPath: {{ .Values.persistence.config.subPath }}
+{{- end }}
+{{- end }}         
+          image: {{ .Values.image.repository }}
+          name: spacebar-server
+          ports:
+            - containerPort: {{ .Values.service.ports.targetPort }}
+          resources: {}
+      restartPolicy: Always
+status: {}
