@@ -12,7 +12,7 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - latest
+      - latest-pg
   release:
     types: [published]
 
