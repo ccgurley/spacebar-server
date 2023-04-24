@@ -5,7 +5,6 @@ RUN git clone https://github.com/spacebarchat/server.git
 RUN mv server spacebar-server
 WORKDIR /spacebar-server
 RUN apt-get update ; apt-get upgrade -y ; apt-get install -y python-is-python3 build-essential
-RUN git pull
 RUN npm i
 RUN npm run setup
 
